@@ -1,0 +1,29 @@
+npm verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+npm info using npm@11.6.1
+npm info using node@v24.11.0
+npm verbose title npm install
+npm verbose argv "install" "--loglevel" "verbose"
+npm verbose logfile logs-max:10 dir:C:\Users\hp-d\AppData\Local\npm-cache\_logs\2026-03-08T09_52_48_661Z-
+npm verbose logfile C:\Users\hp-d\AppData\Local\npm-cache\_logs\2026-03-08T09_52_48_661Z-debug-0.log
+npm http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 1464ms
+npm http cache https://registry.npmjs.org/vite 63ms (cache hit)
+npm http cache https://registry.npmjs.org/@vitejs%2fplugin-react 34ms (cache hit)
+npm http cache https://registry.npmjs.org/@tailwindcss%2fvite 60ms (cache hit)
+
+up to date, audited 353 packages in 5s
+
+43 packages are looking for funding
+  run `npm fund` for details
+
+1 moderate severity vulnerability
+
+To address all issues, run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm verbose cwd C:\Users\hp-d\Downloads\Political Intelligence Platform Dashboard (3)
+npm verbose os Windows_NT 10.0.26200
+npm verbose node v24.11.0
+npm verbose npm  v11.6.1
+npm verbose exit 0
+npm info ok
