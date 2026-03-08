@@ -139,6 +139,15 @@ export default function VoterIntelligence() {
   const [filterBooth, setFilterBooth] = useState('all');
   const [isAddVoterDialogOpen, setIsAddVoterDialogOpen] = useState(false);
 
+  const handleExportData = () => {
+    if (filteredVoters.length === 0) {
+      toast.error('Nothing to export');
+      return;
+    }
+    downloadCSV('voters.csv', filteredVoters);
+    toast.success('Export started');
+  };
+
   const handleAddVoter = () => {
     setIsAddVoterDialogOpen(true);
   };
@@ -150,15 +159,6 @@ export default function VoterIntelligence() {
     const matchesBooth = filterBooth === 'all' || voter.booth === filterBooth;
     return matchesSearch && matchesSegment && matchesBooth;
   });
-
-  const handleExportData = () => {
-    if (filteredVoters.length === 0) {
-      toast.error('Nothing to export');
-      return;
-    }
-    downloadCSV('voters.csv', filteredVoters);
-    toast.success('Export started');
-  };
 
   return (
     <div className="space-y-6">

@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { toast } from 'sonner';
-import { downloadCSV } from '../utils/exportUtils';
 
 const sentimentOverview = [
   { label: 'Positive', value: 74.2, count: 18234, trend: 'up', change: '+2.3%' },

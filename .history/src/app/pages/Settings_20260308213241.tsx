@@ -584,25 +584,22 @@ export default function Settings() {
               Manage API keys for integrating with external services
             </p>
             <div className="space-y-3">
-              {apiKeys.map(k => (
-                <div key={k.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{k.label}</p>
-                    <p className="text-sm text-gray-600 font-mono">{k.key}</p>
-                    <p className="text-xs text-gray-500">Created {k.created}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleViewApiKey(k.key)}>
-                      View
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleRevokeApiKey(k.id)}>
-                      Revoke
-                    </Button>
-                  </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <p className="font-medium">Production API Key</p>
+                  <p className="text-sm text-gray-600 font-mono">pk_live_••••••••••••••5f2a</p>
                 </div>
-              ))}
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => toast.info('API key shown temporarily')}>
+                    View
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => toast.success('API key revoked')}>
+                    Revoke
+                  </Button>
+                </div>
+              </div>
             </div>
-            <Button className="mt-4" variant="outline" onClick={handleGenerateApiKey}>
+            <Button className="mt-4" variant="outline" onClick={handleGenerateAPIKey}>
               <Key className="w-4 h-4 mr-2" />
               Generate New Key
             </Button>

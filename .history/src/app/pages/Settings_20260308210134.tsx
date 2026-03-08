@@ -29,7 +29,6 @@ import {
   Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { downloadCSV, downloadJSON } from '../utils/exportUtils';
 import { useUser } from '../context/UserContext';
 
 export default function Settings() {
@@ -173,79 +172,8 @@ export default function Settings() {
     toast.info('Notification settings reset to default');
   };
 
-  interface TeamMember {
-    name: string;
-    role: string;
-    email: string;
-    status: 'Active' | 'Pending' | 'Suspended';
-  }
-
-  interface ApiKey {
-    id: number;
-    label: string;
-    key: string;
-    created: string;
-  }
-
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    { name: 'Rajesh Kumar', role: 'Campaign Manager', email: 'rajesh@example.com', status: 'Active' },
-    { name: 'Priya Sharma', role: 'Field Coordinator', email: 'priya@example.com', status: 'Active' },
-    { name: 'Amit Verma', role: 'Data Analyst', email: 'amit@example.com', status: 'Active' },
-    { name: 'Sunita Patel', role: 'Social Media Manager', email: 'sunita@example.com', status: 'Active' },
-    { name: 'Vikram Singh', role: 'Operations Lead', email: 'vikram@example.com', status: 'Pending' },
-  ]);
-
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([
-    { id: 1, label: 'Production API Key', key: 'pk_live_••••••••••••••5f2a', created: '2026-03-01' },
-  ]);
-
   const handleInviteMember = () => {
-    const name = prompt('Enter member name');
-    const email = prompt('Enter member email');
-    const role = prompt('Enter role for member');
-    if (name && email && role) {
-      setTeamMembers(prev => [
-        ...prev,
-        { name, email, role, status: 'Pending' as const },
-      ]);
-      toast.success('Invitation sent to ' + email);
-    } else {
-      toast.error('Invitation cancelled or incomplete');
-    }
-  };
-
-  const removeTeamMember = (email: string) => {
-    setTeamMembers(prev => prev.filter(m => m.email !== email));
-    toast.success('Member removed from team');
-  };
-
-  const suspendTeamMember = (email: string) => {
-    setTeamMembers(prev =>
-      prev.map(m =>
-        m.email === email ? { ...m, status: 'Suspended' } : m
-      )
-    );
-    toast.warning('Member suspended');
-  };
-
-  const handleGenerateApiKey = () => {
-    const newKey: ApiKey = {
-      id: apiKeys.length + 1,
-      label: `Key ${apiKeys.length + 1}`,
-      key: `pk_live_${Math.random().toString(36).substr(2, 16)}`,
-      created: new Date().toISOString().split('T')[0],
-    };
-    setApiKeys(prev => [...prev, newKey]);
-    toast.success('New API key generated successfully');
-  };
-
-  const handleViewApiKey = (key: string) => {
-    toast.info(`API key: ${key}`);
-  };
-
-  const handleRevokeApiKey = (id: number) => {
-    setApiKeys(prev => prev.filter(k => k.id !== id));
-    toast.success('API key revoked');
+    toast.info('Invite member dialog would open here');
   };
 
   const handleExportCSV = () => {
@@ -584,25 +512,22 @@ export default function Settings() {
               Manage API keys for integrating with external services
             </p>
             <div className="space-y-3">
-              {apiKeys.map(k => (
-                <div key={k.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{k.label}</p>
-                    <p className="text-sm text-gray-600 font-mono">{k.key}</p>
-                    <p className="text-xs text-gray-500">Created {k.created}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleViewApiKey(k.key)}>
-                      View
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleRevokeApiKey(k.id)}>
-                      Revoke
-                    </Button>
-                  </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <p className="font-medium">Production API Key</p>
+                  <p className="text-sm text-gray-600 font-mono">pk_live_••••••••••••••5f2a</p>
                 </div>
-              ))}
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => toast.info('API key shown temporarily')}>
+                    View
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => toast.success('API key revoked')}>
+                    Revoke
+                  </Button>
+                </div>
+              </div>
             </div>
-            <Button className="mt-4" variant="outline" onClick={handleGenerateApiKey}>
+            <Button className="mt-4" variant="outline" onClick={handleGenerateAPIKey}>
               <Key className="w-4 h-4 mr-2" />
               Generate New Key
             </Button>
@@ -759,7 +684,13 @@ export default function Settings() {
             </div>
 
             <div className="space-y-3">
-              {teamMembers.map((member) => (
+              {[
+                { name: 'Rajesh Kumar', role: 'Campaign Manager', email: 'rajesh@example.com', status: 'Active' },
+                { name: 'Priya Sharma', role: 'Field Coordinator', email: 'priya@example.com', status: 'Active' },
+                { name: 'Amit Verma', role: 'Data Analyst', email: 'amit@example.com', status: 'Active' },
+                { name: 'Sunita Patel', role: 'Social Media Manager', email: 'sunita@example.com', status: 'Active' },
+                { name: 'Vikram Singh', role: 'Operations Lead', email: 'vikram@example.com', status: 'Pending' },
+              ].map((member) => (
                 <div key={member.email} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                   <div className="flex items-center gap-4">
                     <Avatar>
@@ -781,8 +712,8 @@ export default function Settings() {
                     </div>
                     <Select defaultValue="edit" onValueChange={(value) => {
                       if (value === 'edit') toast.info('Edit member dialog would open');
-                      if (value === 'remove') removeTeamMember(member.email);
-                      if (value === 'suspend') suspendTeamMember(member.email);
+                      if (value === 'remove') toast.success('Member removed from team');
+                      if (value === 'suspend') toast.warning('Member suspended');
                     }}>
                       <SelectTrigger className="w-[120px]">
                         <SelectValue />

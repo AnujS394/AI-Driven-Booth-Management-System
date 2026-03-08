@@ -145,8 +145,26 @@ export default function Settings() {
     toast.success('Session revoked successfully');
   };
 
+  // API key management
+  const [apiKeys, setApiKeys] = useState([
+    { id: 1, label: 'Production API Key', key: 'pk_live_••••••••••••••5f2a', created: '2026-03-01' }
+  ]);
+
   const handleGenerateAPIKey = () => {
+    // create a fake key for demo
+    const newKey = `pk_live_${Math.random().toString(36).substr(2, 16)}`;
+    setApiKeys(prev => [...prev, { id: Date.now(), label: `Key ${prev.length + 1}`, key: newKey, created: new Date().toISOString().split('T')[0] }]);
     toast.success('New API key generated successfully');
+  };
+
+  const handleViewAPIKey = (key: string) => {
+    navigator.clipboard.writeText(key);
+    toast.info('API key copied to clipboard');
+  };
+
+  const handleRevokeAPIKey = (id: number) => {
+    setApiKeys(prev => prev.filter(k => k.id !== id));
+    toast.success('API key revoked');
   };
 
   const handleSaveNotifications = () => {
@@ -173,21 +191,8 @@ export default function Settings() {
     toast.info('Notification settings reset to default');
   };
 
-  interface TeamMember {
-    name: string;
-    role: string;
-    email: string;
-    status: 'Active' | 'Pending' | 'Suspended';
-  }
-
-  interface ApiKey {
-    id: number;
-    label: string;
-    key: string;
-    created: string;
-  }
-
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
+  // team management
+  const [teamMembers, setTeamMembers] = useState([
     { name: 'Rajesh Kumar', role: 'Campaign Manager', email: 'rajesh@example.com', status: 'Active' },
     { name: 'Priya Sharma', role: 'Field Coordinator', email: 'priya@example.com', status: 'Active' },
     { name: 'Amit Verma', role: 'Data Analyst', email: 'amit@example.com', status: 'Active' },
@@ -195,57 +200,30 @@ export default function Settings() {
     { name: 'Vikram Singh', role: 'Operations Lead', email: 'vikram@example.com', status: 'Pending' },
   ]);
 
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([
-    { id: 1, label: 'Production API Key', key: 'pk_live_••••••••••••••5f2a', created: '2026-03-01' },
-  ]);
-
   const handleInviteMember = () => {
-    const name = prompt('Enter member name');
-    const email = prompt('Enter member email');
-    const role = prompt('Enter role for member');
-    if (name && email && role) {
-      setTeamMembers(prev => [
-        ...prev,
-        { name, email, role, status: 'Pending' as const },
-      ]);
-      toast.success('Invitation sent to ' + email);
-    } else {
-      toast.error('Invitation cancelled or incomplete');
+    const name = prompt('Enter name of new member');
+    const email = prompt('Enter email of new member');
+    if (name && email) {
+      setTeamMembers(prev => [...prev, { name, role: 'Member', email, status: 'Pending' }]);
+      toast.success('Invitation sent');
     }
   };
 
-  const removeTeamMember = (email: string) => {
-    setTeamMembers(prev => prev.filter(m => m.email !== email));
-    toast.success('Member removed from team');
-  };
+  const handleTeamAction = (email: string, action: string) => {
+    setTeamMembers(prev => prev.map(m => {
+      if (m.email !== email) return m;
+      if (action === 'remove') return null;
+      if (action === 'suspend') return { ...m, status: 'Suspended' };
+      if (action === 'edit') {
+        const newRole = prompt('Enter new role', m.role);
+        return newRole ? { ...m, role: newRole } : m;
+      }
+      return m;
+    }).filter(Boolean) as typeof teamMembers);
 
-  const suspendTeamMember = (email: string) => {
-    setTeamMembers(prev =>
-      prev.map(m =>
-        m.email === email ? { ...m, status: 'Suspended' } : m
-      )
-    );
-    toast.warning('Member suspended');
-  };
-
-  const handleGenerateApiKey = () => {
-    const newKey: ApiKey = {
-      id: apiKeys.length + 1,
-      label: `Key ${apiKeys.length + 1}`,
-      key: `pk_live_${Math.random().toString(36).substr(2, 16)}`,
-      created: new Date().toISOString().split('T')[0],
-    };
-    setApiKeys(prev => [...prev, newKey]);
-    toast.success('New API key generated successfully');
-  };
-
-  const handleViewApiKey = (key: string) => {
-    toast.info(`API key: ${key}`);
-  };
-
-  const handleRevokeApiKey = (id: number) => {
-    setApiKeys(prev => prev.filter(k => k.id !== id));
-    toast.success('API key revoked');
+    if (action === 'remove') toast.success('Member removed from team');
+    else if (action === 'suspend') toast.warning('Member suspended');
+    else if (action === 'edit') toast.info('Member role updated');
   };
 
   const handleExportCSV = () => {
@@ -584,25 +562,26 @@ export default function Settings() {
               Manage API keys for integrating with external services
             </p>
             <div className="space-y-3">
-              {apiKeys.map(k => (
-                <div key={k.id} className="flex items-center justify-between p-4 border rounded-lg">
+              {apiKeys.map(key => (
+                <div key={key.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="font-medium">{k.label}</p>
-                    <p className="text-sm text-gray-600 font-mono">{k.key}</p>
-                    <p className="text-xs text-gray-500">Created {k.created}</p>
+                    <p className="font-medium">{key.label}</p>
+                    <p className="text-sm text-gray-600 font-mono">
+                      {key.key.length > 20 ? key.key.slice(0, 8) + '••••••' + key.key.slice(-4) : key.key}
+                    </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleViewApiKey(k.key)}>
+                    <Button variant="outline" size="sm" onClick={() => handleViewAPIKey(key.key)}>
                       View
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleRevokeApiKey(k.id)}>
+                    <Button variant="outline" size="sm" onClick={() => handleRevokeAPIKey(key.id)}>
                       Revoke
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
-            <Button className="mt-4" variant="outline" onClick={handleGenerateApiKey}>
+            <Button className="mt-4" variant="outline" onClick={handleGenerateAPIKey}>
               <Key className="w-4 h-4 mr-2" />
               Generate New Key
             </Button>
@@ -775,15 +754,11 @@ export default function Settings() {
                   <div className="flex items-center gap-3">
                     <div className="text-right mr-4">
                       <p className="text-sm font-medium">{member.role}</p>
-                      <Badge variant={member.status === 'Active' ? 'default' : 'secondary'}>
+                      <Badge variant={member.status === 'Active' ? 'default' : member.status === 'Pending' ? 'secondary' : 'destructive'}>
                         {member.status}
                       </Badge>
                     </div>
-                    <Select defaultValue="edit" onValueChange={(value) => {
-                      if (value === 'edit') toast.info('Edit member dialog would open');
-                      if (value === 'remove') removeTeamMember(member.email);
-                      if (value === 'suspend') suspendTeamMember(member.email);
-                    }}>
+                    <Select defaultValue="edit" onValueChange={(value) => handleTeamAction(member.email, value)}>
                       <SelectTrigger className="w-[120px]">
                         <SelectValue />
                       </SelectTrigger>

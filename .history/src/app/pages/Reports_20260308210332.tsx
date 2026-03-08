@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -77,35 +77,9 @@ export default function Reports() {
   // Custom report creation state
   const [customReportType, setCustomReportType] = useState('');
   const [customTimePeriod, setCustomTimePeriod] = useState('');
-  const [customDateRange, setCustomDateRange] = useState<{start:string;end:string} | null>(null);
-
-  // open date dialog automatically if user selects 'custom' period
-  useEffect(() => {
-    if (customTimePeriod === 'custom') {
-      setCustomDateDialogOpen(true);
-    }
-  }, [customTimePeriod]);
 
   const handleCustomDate = () => {
     setCustomDateDialogOpen(true);
-  };
-
-  const handleExportCSV = () => {
-    if (reports.length === 0) {
-      toast.error('No reports available to export');
-      return;
-    }
-    downloadCSV('reports.csv', reports);
-    toast.success('CSV export started');
-  };
-
-  const handleExportJSON = () => {
-    if (reports.length === 0) {
-      toast.error('No reports available to export');
-      return;
-    }
-    downloadJSON('reports.json', reports);
-    toast.success('JSON export started');
   };
 
   const handleExportAll = () => {
@@ -148,11 +122,6 @@ export default function Reports() {
       toast.error('Please select a time period');
       return;
     }
-    if (customTimePeriod === 'custom' && !customDateRange) {
-      toast.error('Please choose a custom date range');
-      setCustomDateDialogOpen(true);
-      return;
-    }
 
     const reportTypeNames: Record<string, string> = {
       voter: 'Voter Analysis',
@@ -162,7 +131,7 @@ export default function Reports() {
       campaign: 'Campaign Metrics',
     };
 
-    const newReport: any = {
+    const newReport = {
       id: reports.length + 1,
       name: `Custom ${reportTypeNames[customReportType]} Report`,
       type: 'Custom',
@@ -170,11 +139,6 @@ export default function Reports() {
       status: 'Processing',
       size: '0 KB',
     };
-
-    if (customTimePeriod === 'custom' && customDateRange) {
-      newReport.startDate = customDateRange.start;
-      newReport.endDate = customDateRange.end;
-    }
 
     setReports([newReport, ...reports]);
     toast.success('Report generation started!');
@@ -191,11 +155,28 @@ export default function Reports() {
       // automatically download the generated report as JSON
       downloadJSON(`report-${newReport.id}.json`, readyReport);
     }, 3000);
-    
+
     // Reset form
     setCustomReportType('');
     setCustomTimePeriod('');
-    setCustomDateRange(null);
+  };
+
+  const handleExportCSV = () => {
+    if (reports.length === 0) {
+      toast.error('No reports available to export');
+      return;
+    }
+    downloadCSV('reports.csv', reports);
+    toast.success('CSV export started');
+  };
+
+  const handleExportJSON = () => {
+    if (reports.length === 0) {
+      toast.error('No reports available to export');
+      return;
+    }
+    downloadJSON('reports.json', reports);
+    toast.success('JSON export started');
   };
 
   const handleExportPDF = () => {
@@ -621,17 +602,7 @@ export default function Reports() {
       </Tabs>
 
       {/* Custom Date Dialog */}
-      <CustomDateDialog
-        open={isCustomDateDialogOpen}
-        onOpenChange={setCustomDateDialogOpen}
-        onApply={(start, end) => {
-          setCustomDateRange({ start, end });
-          // once applied, clear the customTimePeriod if user cancelled earlier
-          if (customTimePeriod !== 'custom') {
-            setCustomTimePeriod('custom');
-          }
-        }}
-      />
+      <CustomDateDialog open={isCustomDateDialogOpen} onOpenChange={setCustomDateDialogOpen} />
     </div>
   );
 }

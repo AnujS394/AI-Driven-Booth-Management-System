@@ -80,7 +80,7 @@ export default function Reports() {
   const [customDateRange, setCustomDateRange] = useState<{start:string;end:string} | null>(null);
 
   // open date dialog automatically if user selects 'custom' period
-  useEffect(() => {
+  React.useEffect(() => {
     if (customTimePeriod === 'custom') {
       setCustomDateDialogOpen(true);
     }
@@ -196,6 +196,15 @@ export default function Reports() {
     setCustomReportType('');
     setCustomTimePeriod('');
     setCustomDateRange(null);
+  };
+
+  const handleExportJSON = () => {
+    if (reports.length === 0) {
+      toast.error('No reports available to export');
+      return;
+    }
+    downloadJSON('reports.json', reports);
+    toast.success('JSON export started');
   };
 
   const handleExportPDF = () => {

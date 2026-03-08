@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -26,12 +26,12 @@ import { downloadCSV, downloadJSON, downloadText } from '../utils/exportUtils';
 import { CustomDateDialog } from '../components/CustomDateDialog';
 
 const initialReports = [
-  { id: 1, name: 'Monthly Voter Analysis', type: 'Analytics', date: '2026-03-01', status: 'Ready', size: '2.4 MB' },
-  { id: 2, name: 'Booth Performance Report', type: 'Performance', date: '2026-03-03', status: 'Ready', size: '1.8 MB' },
-  { id: 3, name: 'Worker Activity Summary', type: 'Operations', date: '2026-03-05', status: 'Ready', size: '956 KB' },
-  { id: 4, name: 'Sentiment Trends Report', type: 'Analytics', date: '2026-03-06', status: 'Processing', size: '3.2 MB' },
-  { id: 5, name: 'Development Projects Overview', type: 'Projects', date: '2026-03-07', status: 'Ready', size: '1.5 MB' },
-  { id: 6, name: 'Campaign Performance Report', type: 'Campaigns', date: '2026-03-07', status: 'Ready', size: '2.1 MB' },
+  { id: 1, name: 'Monthly Voter Analysis', type: 'analytics', date: '2026-03-01', status: 'Ready', size: '2.4 MB', isCustom: false },
+  { id: 2, name: 'Booth Performance Report', type: 'performance', date: '2026-03-03', status: 'Ready', size: '1.8 MB', isCustom: false },
+  { id: 3, name: 'Worker Activity Summary', type: 'operations', date: '2026-03-05', status: 'Ready', size: '956 KB', isCustom: false },
+  { id: 4, name: 'Sentiment Trends Report', type: 'analytics', date: '2026-03-06', status: 'Processing', size: '3.2 MB', isCustom: false },
+  { id: 5, name: 'Development Projects Overview', type: 'projects', date: '2026-03-07', status: 'Ready', size: '1.5 MB', isCustom: false },
+  { id: 6, name: 'Campaign Performance Report', type: 'campaigns', date: '2026-03-07', status: 'Ready', size: '2.1 MB', isCustom: false },
 ];
 
 const voterTurnoutData = [
@@ -73,39 +73,14 @@ export default function Reports() {
   const [reportType, setReportType] = useState('all');
   const [dateRange, setDateRange] = useState('month');
   const [isCustomDateDialogOpen, setCustomDateDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
   
   // Custom report creation state
   const [customReportType, setCustomReportType] = useState('');
   const [customTimePeriod, setCustomTimePeriod] = useState('');
-  const [customDateRange, setCustomDateRange] = useState<{start:string;end:string} | null>(null);
-
-  // open date dialog automatically if user selects 'custom' period
-  useEffect(() => {
-    if (customTimePeriod === 'custom') {
-      setCustomDateDialogOpen(true);
-    }
-  }, [customTimePeriod]);
 
   const handleCustomDate = () => {
     setCustomDateDialogOpen(true);
-  };
-
-  const handleExportCSV = () => {
-    if (reports.length === 0) {
-      toast.error('No reports available to export');
-      return;
-    }
-    downloadCSV('reports.csv', reports);
-    toast.success('CSV export started');
-  };
-
-  const handleExportJSON = () => {
-    if (reports.length === 0) {
-      toast.error('No reports available to export');
-      return;
-    }
-    downloadJSON('reports.json', reports);
-    toast.success('JSON export started');
   };
 
   const handleExportAll = () => {
@@ -148,11 +123,6 @@ export default function Reports() {
       toast.error('Please select a time period');
       return;
     }
-    if (customTimePeriod === 'custom' && !customDateRange) {
-      toast.error('Please choose a custom date range');
-      setCustomDateDialogOpen(true);
-      return;
-    }
 
     const reportTypeNames: Record<string, string> = {
       voter: 'Voter Analysis',
@@ -162,7 +132,7 @@ export default function Reports() {
       campaign: 'Campaign Metrics',
     };
 
-    const newReport: any = {
+    const newReport = {
       id: reports.length + 1,
       name: `Custom ${reportTypeNames[customReportType]} Report`,
       type: 'Custom',
@@ -170,11 +140,6 @@ export default function Reports() {
       status: 'Processing',
       size: '0 KB',
     };
-
-    if (customTimePeriod === 'custom' && customDateRange) {
-      newReport.startDate = customDateRange.start;
-      newReport.endDate = customDateRange.end;
-    }
 
     setReports([newReport, ...reports]);
     toast.success('Report generation started!');
@@ -191,11 +156,28 @@ export default function Reports() {
       // automatically download the generated report as JSON
       downloadJSON(`report-${newReport.id}.json`, readyReport);
     }, 3000);
-    
+
     // Reset form
     setCustomReportType('');
     setCustomTimePeriod('');
-    setCustomDateRange(null);
+  };
+
+  const handleExportCSV = () => {
+    if (reports.length === 0) {
+      toast.error('No reports available to export');
+      return;
+    }
+    downloadCSV('reports.csv', reports);
+    toast.success('CSV export started');
+  };
+
+  const handleExportJSON = () => {
+    if (reports.length === 0) {
+      toast.error('No reports available to export');
+      return;
+    }
+    downloadJSON('reports.json', reports);
+    toast.success('JSON export started');
   };
 
   const handleExportPDF = () => {
@@ -213,7 +195,9 @@ export default function Reports() {
 
   const filteredReports = reportType === 'all' 
     ? reports 
-    : reports.filter(r => r.type.toLowerCase() === reportType.toLowerCase());
+    : reportType === 'custom'
+      ? reports.filter(r => r.isCustom)
+      : reports.filter(r => r.type.toLowerCase() === reportType.toLowerCase());
 
   return (
     <div className="space-y-6">
@@ -272,7 +256,10 @@ export default function Reports() {
       </div>
 
       {/* Analytics Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(v) => {
+          setActiveTab(v);
+          if (v === 'custom') setReportType('custom');
+        }} className="space-y-6">
         <TabsList className="grid w-full md:w-auto grid-cols-2 md:grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="voters">Voter Analytics</TabsTrigger>
@@ -536,7 +523,7 @@ export default function Reports() {
                     <div>
                       <p className="font-medium">{report.name}</p>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs text-gray-500">{report.type}</span>
+                        <span className="text-xs text-gray-500">{report.isCustom && report.originalType ? `${report.originalType} (Custom)` : report.type}</span>
                         <span className="text-xs text-gray-500">• {report.date}</span>
                         <span className="text-xs text-gray-500">• {report.size}</span>
                       </div>
@@ -621,17 +608,7 @@ export default function Reports() {
       </Tabs>
 
       {/* Custom Date Dialog */}
-      <CustomDateDialog
-        open={isCustomDateDialogOpen}
-        onOpenChange={setCustomDateDialogOpen}
-        onApply={(start, end) => {
-          setCustomDateRange({ start, end });
-          // once applied, clear the customTimePeriod if user cancelled earlier
-          if (customTimePeriod !== 'custom') {
-            setCustomTimePeriod('custom');
-          }
-        }}
-      />
+      <CustomDateDialog open={isCustomDateDialogOpen} onOpenChange={setCustomDateDialogOpen} />
     </div>
   );
 }

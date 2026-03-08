@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Search, Filter, Download, UserPlus, TrendingUp, Users, Briefcase, Sprout } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { toast } from 'sonner';
-import { downloadCSV } from '../utils/exportUtils';
 import { AddVoterDialog } from '../components/AddVoterDialog';
 
 const voters = [
@@ -139,6 +138,11 @@ export default function VoterIntelligence() {
   const [filterBooth, setFilterBooth] = useState('all');
   const [isAddVoterDialogOpen, setIsAddVoterDialogOpen] = useState(false);
 
+  const handleExportData = () => {
+    downloadCSV('voters.csv', voters);
+    toast.success('Export started');
+  };
+
   const handleAddVoter = () => {
     setIsAddVoterDialogOpen(true);
   };
@@ -150,15 +154,6 @@ export default function VoterIntelligence() {
     const matchesBooth = filterBooth === 'all' || voter.booth === filterBooth;
     return matchesSearch && matchesSegment && matchesBooth;
   });
-
-  const handleExportData = () => {
-    if (filteredVoters.length === 0) {
-      toast.error('Nothing to export');
-      return;
-    }
-    downloadCSV('voters.csv', filteredVoters);
-    toast.success('Export started');
-  };
 
   return (
     <div className="space-y-6">

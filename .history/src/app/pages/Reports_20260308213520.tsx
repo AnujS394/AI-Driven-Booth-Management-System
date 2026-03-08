@@ -198,6 +198,15 @@ export default function Reports() {
     setCustomDateRange(null);
   };
 
+  const handleExportJSON = () => {
+    if (reports.length === 0) {
+      toast.error('No reports available to export');
+      return;
+    }
+    downloadJSON('reports.json', reports);
+    toast.success('JSON export started');
+  };
+
   const handleExportPDF = () => {
     // For now we simply convert to text since PDF generation requires external library/demo data
     if (reports.length === 0) {
